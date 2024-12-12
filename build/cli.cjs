@@ -12692,6 +12692,12 @@ const commands = [
         action: zkeyExportSolidityVerifier
     },
     {
+        cmd: "zkey export zetrixverifier [circuit_final.zkey] [verifier.sol]",
+        description: "Creates a verifier in Zetrix",
+        alias: ["zkesv", "generateverifier -vk|verificationkey -v|verifier"],
+        action: zkeyExportZetrixVerifier
+    },
+    {
         cmd: "zkey export soliditycalldata [public.json] [proof.json]",
         description: "Generates call parameters ready to be called.",
         alias: ["zkesc", "generatecall -pub|public -p|proof"],
@@ -13089,6 +13095,36 @@ async function zkeyExportSolidityVerifier(params, options) {
     }
 
     const verifierCode = await exportSolidityVerifier(zkeyName, templates, logger);
+
+    fs__default["default"].writeFileSync(verifierName, verifierCode, "utf-8");
+
+    return 0;
+}
+
+// zetrix genverifier [circuit_final.zkey]
+async function zkeyExportZetrixVerifier(params, options) {
+    let zkeyName;
+    let verifierName = "snark.ts";
+
+    if (params.length < 1) {
+        zkeyName = "circuit_final.zkey";
+    } else {
+        zkeyName = params[0];
+    }
+
+    if (options.verbose) Logger__default["default"].setLogLevel("DEBUG");
+
+    const templates = {};
+
+    if (await fileExists(path__default["default"].join(__dirname$1, "templates"))) {
+        templates.groth16 = {};
+        templates.plonk = await fs__default["default"].promises.readFile(path__default["default"].join(__dirname$1, "templates", "verifier_plonk.js.ejs"), "utf8");
+    } else {
+        templates.groth16 = {};
+        templates.plonk = await fs__default["default"].promises.readFile(path__default["default"].join(__dirname$1, "..", "templates", "verifier_plonk.js.ejs"), "utf8");
+    }
+
+    const verifierCode = await exportZetrixVerifier(zkeyName, templates, logger);
 
     fs__default["default"].writeFileSync(verifierName, verifierCode, "utf-8");
 

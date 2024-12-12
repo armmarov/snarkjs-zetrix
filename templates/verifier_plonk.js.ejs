@@ -1,0 +1,2230 @@
+'use strict';
+const Math = function () { /**
+ * Converts a number to a binary string of specified length.
+ * Pads the binary string with leading zeros if necessary.
+ *
+ * @param {number|string} num - The number to convert to binary.
+ * @param {number|string} length - The desired length of the binary string.
+ * @returns {string} - The binary representation of the number.
+ */
+this.num2bin = function (num, length) {
+    let binary = num.toString(2);
+// Convert number to binary string
+// Pad with leading zeros to match the specified length
+    return binary.padStart(length, '0').toString();
+};
+    /**
+     * Represents a power function.
+     *
+     * The `pow` property is typically used to perform exponentiation
+     * calculations, where a base number is raised to the power of an exponent.
+     *
+     * @param {number|string} base - The base number.
+     * @param {number|string} exponent - Power of number.
+     * @returns {number|string} - The power of number.
+     */
+    this.pow = function (base, exponent) {
+        let result = 1;
+        let i;
+        for (i = 0; i < exponent; i += 1) {
+            result = Utils.int256Mul(result, base);
+        }
+        return result;
+    };
+    /**
+     * Represents the leftShift functionality.
+     *
+     * The `leftShift` function typically performs a bitwise left shift operation
+     * on a given number. In a left shift operation, the binary representation of a
+     * number is shifted to the left by the specified number of bits, effectively
+     * multiplying the number by a power of two. For each shift to the left, the
+     * number is doubled, and the leftmost bits are discarded if they exceed the
+     * number's bit-width, while zeros are shifted in on the right.
+     *
+     * @param {number|string} value - The numeric value to be shifted.
+     * @param {number|string} shiftBy - The number of positions to shift the bits to the left.
+     * @returns {number|string} The result of shifting the bits of the given value to the left by the specified number of positions.
+     */
+    this.leftShift = function (value, shiftBy) {
+        return Utils.int256Mul(value, this.pow(2, shiftBy));
+    };
+    /**
+     * Performs a right bitwise shift operation on the given value.
+     *
+     * The rightShift operation shifts the bits of the provided value
+     * to the right by a specified number of positions. In a right
+     * shift operation, the sign bit is used to fill the vacated bit
+     * positions to the left for signed numbers, which is also known
+     * as arithmetic shift. For unsigned numbers, zeroes are used
+     * to fill these positions.
+     *
+     * Note: This operation is equivalent to the `>>` operator
+     * for signed numbers and the `>>>` operator for unsigned numbers
+     * in JavaScript.
+     *
+     * @param {number|string} value - The numeric value to be shifted.
+     * @param {number|string} shiftBy - The number of positions to shift the bits to the right.
+     * @returns {number|string} The result of shifting the bits of the given value to the right by the specified number of positions.
+     */
+    this.rightShift = function (value, shiftBy) {
+        return Utils.int256Div(value, this.pow(2, shiftBy));
+    };
+    /**
+     * Represents a function for performing a bitwise AND operation.
+     *
+     * The `bitwiseAnd` function takes two integer inputs and returns a new integer
+     * that is the result of a bitwise AND operation applied to them. In a bitwise
+     * AND operation, each bit of the output is `1` if the corresponding bit of
+     * each operand is `1`, otherwise it is `0`.
+     *
+     * @function
+     * @param {number|string} a - The first operand for the bitwise AND operation. Must be an integer.
+     * @param {number|string} b - The second operand for the bitwise AND operation. Must be an integer.
+     * @returns {number|string} The result of the bitwise AND operation.
+     */
+    this.bitwiseAnd = function (a, b) {
+        let result = 0;
+        let multiplier = 1;
+        while (Utils.int256Compare(a, 0) > 0 && Utils.int256Compare(b, 0) > 0) {
+            if (Utils.int256Compare(Utils.int256Mod(a, 2), 1) === 0 && Utils.int256Compare(Utils.int256Mod(b, 2), 1) === 0) {
+                result = Utils.int256Add(result, multiplier);
+            }
+            a = Utils.int256Div(a, 2);
+            b = Utils.int256Div(b, 2);
+            multiplier = Utils.int256Mul(multiplier, 2);
+        }
+        return result;
+    };
+    /**
+     * Performs a bitwise OR operation on two integers.
+     *
+     * This method takes two integer arguments and returns an integer result
+     * where each bit in the result is the logical OR of the corresponding bits
+     * of the input values. The bitwise OR operation sets a bit if it is set
+     * in either one of the operands.
+     *
+     * @param {number|string} a - The first integer operand.
+     * @param {number|string} b - The second integer operand.
+     * @returns {number|string} The result of the bitwise OR operation.
+     */
+    this.bitwiseOr = function (a, b) {
+        let result = 0;
+        let multiplier = 1;
+        while (Utils.int256Compare(a, 0) > 0 || Utils.int256Compare(b, 0) > 0) {
+            if (Utils.int256Compare(Utils.int256Mod(a, 2), 1) === 0 || Utils.int256Compare(Utils.int256Mod(b, 2), 1) === 0) {
+                result = Utils.int256Add(result, multiplier);
+            }
+            a = Utils.int256Div(a, 2);
+            b = Utils.int256Div(b, 2);
+            multiplier = Utils.int256Mul(multiplier, 2);
+        }
+        return result;
+    };
+    /**
+     * Reverses the bytes in a binary string.
+     *
+     * @param {string} binaryStr - The binary string to have its bytes reversed.
+     * @param {number|string} length - The bit length which determines how to divide the string into bytes.
+     * @returns {string} - The binary string with its bytes reversed.
+     */
+    this.reverseBytes = function (binaryStr, length) {
+        const paddingLength = Utils.int256Mod(Utils.int256Sub(8, Utils.int256Mod(length, 8)), 8);
+        const paddedBinaryStr = binaryStr.padStart(Utils.int256Add(binaryStr.length, paddingLength), '0');
+        let reversedStr = '';
+        let i;
+        for (i = 0; i < paddedBinaryStr.length; i += 8) {
+            reversedStr = paddedBinaryStr.slice(i, i + 8) + reversedStr;
+        }
+        return reversedStr;
+    };
+    this.toLEUnsigned = function (x, len) {
+        const bytes = new Uint8Array(len);
+        let i;
+        for (i = 0; i < len; i += 1) {
+            bytes[i] = this.bitwiseAnd(x, 0xFF);
+            x = this.rightShift(x, 8);
+        }
+        return bytes;
+    };
+    this.fromLEUnsigned = function (bytes) {
+        let result = 0;
+        let i = 0;
+        for (i = 0; i < bytes.length; i += 1) {
+            result = this.bitwiseOr(result, this.leftShift(bytes[i], Utils.int256Mul(i, 8)));
+        }
+        return result;
+    };
+};
+const BN256Lib = function () {
+    const MathLib = new Math();
+// Curve bits:
+    const CURVE_BITS = 256;
+    const CURVE_BITS_P8 = 264;
+// Key int size:
+    const S = 33;
+    const mask = MathLib.reverseBytes(MathLib.num2bin(1, 33), 33);
+    const zero = MathLib.reverseBytes(MathLib.num2bin(0, 33), 33);
+// Generator of G1:
+    const G1 = {
+        x: 1,
+        y: 2,
+        z: 1,
+        t: 1
+    };
+// Generator of G2:
+    const G2 = {
+        x: {
+            x: 0x198e9393920d483a7260bfb731fb5d25f1aa493335a9e71297e485b7aef312c2,
+            y: 0x1800deef121f1e76426a00665e5c4479674322d4f75edadd46debd5cd992f6ed
+        },
+        y: {
+            x: 0x090689d0585ff075ec9e99ad690c3395bc4b313370b38ef355acdadcd122975b,
+            y: 0x12c85ea5db8c6deb4aab71808dcb408fe3d1e7690c43d37b4ce6cc0166fa7daa
+        },
+        z: {
+            x: 0,
+            y: 1
+        },
+        t: {
+            x: 0,
+            y: 1
+        }
+    };
+    const FQ2Zero = {
+        x: 0,
+        y: 0
+    };
+    const FQ2One = {
+        x: 0,
+        y: 1
+    };
+    const FQ6Zero = {
+        x: FQ2Zero,
+        y: FQ2Zero,
+        z: FQ2Zero
+    };
+    const FQ6One = {
+        x: FQ2Zero,
+        y: FQ2Zero,
+        z: FQ2One
+    };
+    const FQ12Zero = {
+        x: FQ6Zero,
+        y: FQ6Zero
+    };
+    const FQ12One = {
+        x: FQ6Zero,
+        y: FQ6One
+    };
+    const P = 0x30644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd47;
+    const xiToPMinus1Over6 = {
+        x: 0x246996f3b4fae7e6a6327cfe12150b8e747992778eeec7e5ca5cf05f80f362ac,
+        y: 0x1284b71c2865a7dfe8b99fdd76e68b605c521e08292f2176d60b35dadcc9e470
+    };
+    const xiTo2PMinus2Over3 = {
+        x: 0x2c145edbe7fd8aee9f3a80b03b0b1c923685d2ea1bdec763c13b4711cd2b8126,
+        y: 0x05b54f5e64eea80180f3c0b75a181e84d33365f7be94ec72848a1f55921ea762
+    };
+    const xiToPMinus1Over2 = {
+        x: 0x07c03cbcac41049a0704b5a7ec796f2b21807dc98fa25bd282d37f632623b0e3,
+        y: 0x063cf305489af5dcdc5ec698b6e2f9b9dbaae0eda9c95998dc54014671a0135a
+    };
+    const xiToPMinus1Over3 = {
+        x: 0x16c9e55061ebae204ba4cc8bd75a079432ae2a1d0b7c9dce1665d51c640fcba2,
+        y: 0x2fb347984f7911f74c0bec3cf559b143b78cc310c2c3330c99e39557176f553d
+    };
+    const xiTo2PSquaredMinus2Over3 = 0x59e26bcea0d48bacd4f263f1acdb5c4f5763473177fffffe;
+    const xiToPSquaredMinus1Over3 = 0x30644e72e131a0295e6dd9e7e0acccb0c28f069fbb966e3de4bd44e5607cfd48;
+    const xiToPSquaredMinus1Over6 = 0x30644e72e131a0295e6dd9e7e0acccb0c28f069fbb966e3de4bd44e5607cfd49;
+    this.modReduce = function (k, modulus) {
+        let res = Utils.int256Mod(k, modulus);
+        return(Utils.int256Compare(res, 0) < 0)
+            ? Utils.int256Add(res, modulus)
+            : res;
+    };
+    this.mulFQ2 = function (a, b) {
+        let tx = Utils.int256Mul(a.x, b.y);
+        let t = Utils.int256Mul(b.x, a.y);
+        let tx_2 = Utils.int256Add(tx, t);
+        let ty = Utils.int256Mul(a.y, b.y);
+        let t_2 = Utils.int256Mul(a.x, b.x);
+        let ty_2 = Utils.int256Sub(ty, t_2);
+        return {
+            x: this.modReduce(tx_2, P),
+            y: this.modReduce(ty_2, P)
+        };
+    };
+    this.mulXiFQ2 = function (a) { // (xi+y)(i+3) = (9x+y)i+(9y-x)
+        let tx = Utils.int256Add(Utils.int256Add(MathLib.leftShift(a.x, 3), a.x), a.y);
+        let ty = Utils.int256Sub(Utils.int256Add(MathLib.leftShift(a.y, 3), a.y), a.x);
+        return {
+            x: this.modReduce(tx, P),
+            y: this.modReduce(ty, P)
+        };
+    };
+    this.mulScalarFQ2 = function (a, scalar) {
+        return {
+            x: this.modReduce(Utils.int256Mul(a.x, scalar), P),
+            y: this.modReduce(Utils.int256Mul(a.y, scalar), P)
+        };
+    };
+    this.addFQ2 = function (a, b) {
+        return {
+            x: this.modReduce(Utils.int256Add(a.x, b.x), P),
+            y: this.modReduce(Utils.int256Add(a.y, b.y), P)
+        };
+    };
+    this.subFQ2 = function (a, b) {
+        return {
+            x: this.modReduce(Utils.int256Sub(a.x, b.x), P),
+            y: this.modReduce(Utils.int256Sub(a.y, b.y), P)
+        };
+    };
+    this.negFQ2 = function (a) {
+        return {
+            x: this.modReduce(Utils.int256Mul(a.x, -1), P),
+            y: this.modReduce(Utils.int256Mul(a.y, -1), P)
+        };
+    };
+    this.conjugateFQ2 = function (a) {
+        return {
+            x: this.modReduce(Utils.int256Mul(a.x, -1), P),
+            y: this.modReduce(a.y, P)
+        };
+    };
+    this.doubleFQ2 = function (a) {
+        return {
+            x: this.modReduce(Utils.int256Mul(a.x, 2), P),
+            y: this.modReduce(Utils.int256Mul(a.y, 2), P)
+        };
+    };
+    this.squareFQ2 = function (a) {
+        let tx = Utils.int256Sub(a.y, a.x);
+        let ty = Utils.int256Add(a.x, a.y);
+        let ty_2 = Utils.int256Mul(ty, tx);
+        let tx_2 = Utils.int256Mul(Utils.int256Mul(a.x, a.y), 2);
+        return {
+            x: this.modReduce(tx_2, P),
+            y: this.modReduce(ty_2, P)
+        };
+    };
+    this.modInverseBranchlessP = function (x) {
+// This will get substituted by optimized ASM code at transpilation stage.
+// The bellow code is ran while executing in a JS context.
+        return this.modInverseEGCD(x, P);
+    };
+    this.modInverseEGCD = function (x, m) { // This will get substituted by optimized ASM code at transpilation stage.
+        x = this.modReduce(x, P);
+        let UB = 368;
+        let t = 0;
+        let newt = 1;
+        let r = m;
+        let newr = x;
+        let quotient = 0;
+        let tmp = 0;
+        let i;
+        for (i = 0; i < UB; i += 1) {
+            if (Utils.int256Compare(newr, 0) !== 0) {
+                quotient = Utils.int256Div(r, newr);
+                tmp = newt;
+                newt = Utils.int256Mul(Utils.int256Sub(t, quotient), newt);
+                t = tmp;
+                tmp = newr;
+                newr = Utils.int256Mul(Utils.int256Sub(r, quotient), newr);
+                r = tmp;
+            }
+        }
+        if (t < 0) {
+            t = Utils.int256Add(t, m);
+        }
+        return t;
+    };
+    this.inverseFQ2 = function (a) {
+        let t2 = Utils.int256Mul(a.y, a.y);
+        let t1 = Utils.int256Add(Utils.int256Mul(a.x * a.x), t2);
+        let inv = this.modInverseBranchlessP(t1);
+        let axNeg = Utils.int256Mul(a.x, -1);
+        return {
+            x: this.modReduce(Utils.int256Mul(axNeg, inv), P),
+            y: this.modReduce(Utils.int256Mul(a.y, inv), P)
+        };
+    };
+    this.mulFQ6 = function (a, b) {
+// 'Multiplication and Squaring on Pairing-Friendly Fields'
+// Section 4, Karatsuba method.
+// http://eprint.iacr.org/2006/471.pdf
+        let v0 = this.mulFQ2(a.z, b.z);
+        let v1 = this.mulFQ2(a.y, b.y);
+        let v2 = this.mulFQ2(a.x, b.x);
+        let t0 = this.addFQ2(a.x, a.y);
+        let t1 = this.addFQ2(b.x, b.y);
+        let tz = this.mulFQ2(t0, t1);
+        tz = this.subFQ2(tz, v1);
+        tz = this.subFQ2(tz, v2);
+        tz = this.mulXiFQ2(tz);
+        tz = this.addFQ2(tz, v0);
+        t0 = this.addFQ2(a.y, a.z);
+        t1 = this.addFQ2(b.y, b.z);
+        let ty = this.mulFQ2(t0, t1);
+        ty = this.subFQ2(ty, v0);
+        ty = this.subFQ2(ty, v1);
+        t0 = this.mulXiFQ2(v2);
+        ty = this.addFQ2(ty, t0);
+        t0 = this.addFQ2(a.x, a.z);
+        t1 = this.addFQ2(b.x, b.z);
+        let tx = this.mulFQ2(t0, t1);
+        tx = this.subFQ2(tx, v0);
+        tx = this.addFQ2(tx, v1);
+        tx = this.subFQ2(tx, v2);
+        return {x: tx, y: ty, z: tz};
+    };
+    this.doubleFQ6 = function (a) {
+        return {
+            x: this.doubleFQ2(a.x),
+            y: this.doubleFQ2(a.y),
+            z: this.doubleFQ2(a.z)
+        };
+    };
+    this.mulScalarFQ6 = function (a, scalar) {
+        return {
+            x: this.mulFQ2(a.x, scalar),
+            y: this.mulFQ2(a.y, scalar),
+            z: this.mulFQ2(a.z, scalar)
+        };
+    };
+    this.addFQ6 = function (a, b) {
+        return {
+            x: this.addFQ2(a.x, b.x),
+            y: this.addFQ2(a.y, b.y),
+            z: this.addFQ2(a.z, b.z)
+        };
+    };
+    this.subFQ6 = function (a, b) {
+        return {
+            x: this.subFQ2(a.x, b.x),
+            y: this.subFQ2(a.y, b.y),
+            z: this.subFQ2(a.z, b.z)
+        };
+    };
+    this.negFQ6 = function (a) {
+        return {
+            x: this.negFQ6(a.x),
+            y: this.negFQ6(a.y),
+            z: this.negFQ6(a.z)
+        };
+    };
+    this.squareFQ6 = function (a) {
+        let v0 = this.squareFQ2(a.z);
+        let v1 = this.squareFQ2(a.y);
+        let v2 = this.squareFQ2(a.x);
+        let c0 = this.addFQ2(a.x, a.y);
+        c0 = this.squareFQ2(c0);
+        c0 = this.subFQ2(c0, v1);
+        c0 = this.subFQ2(c0, v2);
+        c0 = this.mulXiFQ2(c0);
+        c0 = this.addFQ2(c0, v0);
+        let c1 = this.addFQ2(a.y, a.z);
+        c1 = this.squareFQ2(c1);
+        c1 = this.subFQ2(c1, v0);
+        c1 = this.subFQ2(c1, v1);
+        let xiV2 = this.mulXiFQ2(v2);
+        c1 = this.addFQ2(c1, xiV2);
+        let c2 = this.addFQ2(a.x, a.z);
+        c2 = this.squareFQ2(c2);
+        c2 = this.subFQ2(c2, v0);
+        c2 = this.addFQ2(c2, v1);
+        c2 = this.subFQ2(c2, v2);
+        return {x: c2, y: c1, z: c0};
+    };
+    this.mulTauFQ6 = function (a) { // MulTau computes τ·(aτ²+bτ+c) = bτ²+cτ+aξ
+        return {
+            x: a.y,
+            y: a.z,
+            z: this.mulXiFQ2(a.x)
+        };
+    };
+    this.inverseFQ6 = function (a) {
+// See 'Implementing cryptographic pairings', M. Scott, section 3.2.
+// ftp://136.206.11.249/pub/crypto/pairings.pdf
+// Here we can give a short explanation of how it works: let j be a cubic root of
+// unity in GF(p²) so that 1+j+j²=0.
+// Then (xτ² + yτ + z)(xj²τ² + yjτ + z)(xjτ² + yj²τ + z)
+// = (xτ² + yτ + z)(Cτ²+Bτ+A)
+// = (x³ξ²+y³ξ+z³-3ξxyz) = F is an element of the base field (the norm).
+//
+// On the other hand (xj²τ² + yjτ + z)(xjτ² + yj²τ + z)
+// = τ²(y²-ξxz) + τ(ξx²-yz) + (z²-ξxy)
+//
+// So that's why A = (z²-ξxy), B = (ξx²-yz), C = (y²-ξxz)
+        let A = this.squareFQ2(a.z);
+        let t1 = this.mulFQ2(a.x, a.y);
+        t1 = this.mulXiFQ2(t1);
+        A = this.subFQ2(A, t1);
+        let B = this.squareFQ2(a.x);
+        B = this.mulXiFQ2(B);
+        t1 = this.mulFQ2(a.y, a.z);
+        B = this.subFQ2(B, t1);
+        let C = this.squareFQ2(a.y);
+        t1 = this.mulFQ2(a.x, a.z);
+        C = this.subFQ2(C, t1);
+        let F = this.mulFQ2(C, a.y);
+        F = this.mulXiFQ2(F);
+        t1 = this.mulFQ2(A, a.z);
+        F = this.addFQ2(F, t1);
+        t1 = this.mulFQ2(B, a.x);
+        t1 = this.mulXiFQ2(t1);
+        F = this.addFQ2(F, t1);
+        F = this.inverseFQ2(F);
+        return {
+            x: this.mulFQ2(C, F),
+            y: this.mulFQ2(B, F),
+            z: this.mulFQ2(A, F)
+        };
+    };
+    this.mulScalarFQ12 = function (a, b) {
+        return {
+            x: this.mulFQ6(a.x, b),
+            y: this.mulFQ6(a.y, b)
+        };
+    };
+    this.inverseFQ12 = function (a) {
+// See 'Implementing cryptographic pairings', M. Scott, section 3.2.
+// ftp://136.206.11.249/pub/crypto/pairings.pdf
+        let t1 = this.squareFQ6(a.x);
+        let t2 = this.squareFQ6(a.y);
+        let t1_2 = this.mulTauFQ6(t1);
+        let t1_3 = this.subFQ6(t2, t1_2);
+        let t2_2 = this.inverseFQ6(t1_3);
+        let e = {
+            x: this.negFQ6(a.x),
+            y: a.y
+        };
+        return this.mulScalarFQ12(e, t2_2);
+    };
+    this.mulFQ12 = function (a, b) {
+        let tx = this.mulFQ6(a.x, b.y);
+        let t = this.mulFQ6(b.x, a.y);
+        let tx2 = this.addFQ6(tx, t);
+        let ty = this.mulFQ6(a.y, b.y);
+        let t2 = this.mulFQ6(a.x, b.x);
+        let t3 = this.mulTauFQ6(t2);
+        return {
+            x: tx2,
+            y: this.addFQ6(ty, t3)
+        };
+    };
+    this.frobeniusFQ6 = function (a) {
+        return {
+            x: this.mulFQ2(this.conjugateFQ2(a.x), xiTo2PMinus2Over3),
+            y: this.mulFQ2(this.conjugateFQ2(a.y), xiToPMinus1Over3),
+            z: this.conjugateFQ2(a.z)
+        };
+    };
+    this.frobeniusP2FQ6 = function (a) { // FrobeniusP2 computes (xτ²+yτ+z)^(p²) = xτ^(2p²) + yτ^(p²) + z
+        return { // τ^(2p²) = τ²τ^(2p²-2) = τ²ξ^((2p²-2)/3)
+            x: this.mulScalarFQ2(a.x, xiTo2PSquaredMinus2Over3),
+// τ^(p²) = ττ^(p²-1) = τξ^((p²-1)/3)
+            y: this.mulScalarFQ2(a.y, xiToPSquaredMinus1Over3),
+            z: a.z
+        };
+    };
+    this.mulGFP = function (a, b) {
+        return {
+            x: this.mulScalarFQ2(a.x, b),
+            y: this.mulScalarFQ2(a.y, b),
+            z: this.mulScalarFQ2(a.z, b)
+        };
+    };
+    this.conjugateFQ12 = function (a) {
+        return {
+            x: this.negFQ6(a.x),
+            y: a.y
+        };
+    };
+    this.frobeniusFQ12 = function (a) { // Frobenius computes (xω+y)^p = x^p ω·ξ^((p-1)/6) + y^p
+        return {
+            x: this.mulScalarFQ6(this.frobeniusFQ6(a.x), xiToPMinus1Over6),
+            y: this.frobeniusFQ6(a.y)
+        };
+    };
+    this.frobeniusP2FQ12 = function (a) { // FrobeniusP2 computes (xω+y)^p² = x^p² ω·ξ^((p²-1)/6) + y^p²
+        return {
+            x: this.mulGFP(this.frobeniusP2FQ6(a.x), xiToPSquaredMinus1Over6),
+            y: this.frobeniusP2FQ6(a.y)
+        };
+    };
+    this.squareFQ12 = function (a) { // Complex squaring algorithm
+        let v0 = this.mulFQ6(a.x, a.y);
+        let t = this.mulTauFQ6(a.x);
+        let t2 = this.addFQ6(a.y, t);
+        let ty = this.addFQ6(a.x, a.y);
+        let ty2 = this.mulFQ6(ty, t2);
+        let ty3 = this.subFQ6(ty2, v0);
+        let t3 = this.mulTauFQ6(v0);
+        let ty4 = this.subFQ6(ty3, t3);
+        return {x: this.doubleFQ6(v0), y: ty4};
+    };
+    this.expFQ12_u = function (a) {
+// u is the BN parameter that determines the prime.
+// u = 4965661367192848881;
+        let sum = FQ12One;
+// Unrolled loop. Reference impl.:
+// https://github.com/ethereum/go-ethereum/blob/bd6879ac518431174a490ba42f7e6e822dcb3ee1/crypto/bn256/google/gfp12.go#L138
+        let sum0 = this.squareFQ12(sum);
+        let sum1 = this.mulFQ12(sum0, a);
+        let sum2 = this.squareFQ12(sum1);
+        let sum3 = this.squareFQ12(sum2);
+        let sum4 = this.squareFQ12(sum3);
+        let sum5 = this.squareFQ12(sum4);
+        let sum6 = this.mulFQ12(sum5, a);
+        let sum7 = this.squareFQ12(sum6);
+        let sum8 = this.squareFQ12(sum7);
+        let sum9 = this.squareFQ12(sum8);
+        let sum10 = this.mulFQ12(sum9, a);
+        let sum11 = this.squareFQ12(sum10);
+        let sum12 = this.mulFQ12(sum11, a);
+        let sum13 = this.squareFQ12(sum12);
+        let sum14 = this.mulFQ12(sum13, a);
+        let sum15 = this.squareFQ12(sum14);
+        let sum16 = this.squareFQ12(sum15);
+        let sum17 = this.mulFQ12(sum16, a);
+        let sum18 = this.squareFQ12(sum17);
+        let sum19 = this.squareFQ12(sum18);
+        let sum20 = this.squareFQ12(sum19);
+        let sum21 = this.mulFQ12(sum20, a);
+        let sum22 = this.squareFQ12(sum21);
+        let sum23 = this.mulFQ12(sum22, a);
+        let sum24 = this.squareFQ12(sum23);
+        let sum25 = this.squareFQ12(sum24);
+        let sum26 = this.squareFQ12(sum25);
+        let sum27 = this.mulFQ12(sum26, a);
+        let sum28 = this.squareFQ12(sum27);
+        let sum29 = this.squareFQ12(sum28);
+        let sum30 = this.squareFQ12(sum29);
+        let sum31 = this.mulFQ12(sum30, a);
+        let sum32 = this.squareFQ12(sum31);
+        let sum33 = this.squareFQ12(sum32);
+        let sum34 = this.mulFQ12(sum33, a);
+        let sum35 = this.squareFQ12(sum34);
+        let sum36 = this.squareFQ12(sum35);
+        let sum37 = this.mulFQ12(sum36, a);
+        let sum38 = this.squareFQ12(sum37);
+        let sum39 = this.mulFQ12(sum38, a);
+        let sum40 = this.squareFQ12(sum39);
+        let sum41 = this.squareFQ12(sum40);
+        let sum42 = this.mulFQ12(sum41, a);
+        let sum43 = this.squareFQ12(sum42);
+        let sum44 = this.squareFQ12(sum43);
+        let sum45 = this.squareFQ12(sum44);
+        let sum46 = this.squareFQ12(sum45);
+        let sum47 = this.mulFQ12(sum46, a);
+        let sum48 = this.squareFQ12(sum47);
+        let sum49 = this.squareFQ12(sum48);
+        let sum50 = this.squareFQ12(sum49);
+        let sum51 = this.mulFQ12(sum50, a);
+        let sum52 = this.squareFQ12(sum51);
+        let sum53 = this.squareFQ12(sum52);
+        let sum54 = this.mulFQ12(sum53, a);
+        let sum55 = this.squareFQ12(sum54);
+        let sum56 = this.squareFQ12(sum55);
+        let sum57 = this.squareFQ12(sum56);
+        let sum58 = this.mulFQ12(sum57, a);
+        let sum59 = this.squareFQ12(sum58);
+        let sum60 = this.mulFQ12(sum59, a);
+        let sum61 = this.squareFQ12(sum60);
+        let sum62 = this.squareFQ12(sum61);
+        let sum63 = this.mulFQ12(sum62, a);
+        let sum64 = this.squareFQ12(sum63);
+        let sum65 = this.squareFQ12(sum64);
+        let sum66 = this.squareFQ12(sum65);
+        let sum67 = this.mulFQ12(sum66, a);
+        let sum68 = this.squareFQ12(sum67);
+        let sum69 = this.squareFQ12(sum68);
+        let sum70 = this.squareFQ12(sum69);
+        let sum71 = this.squareFQ12(sum70);
+        let sum72 = this.squareFQ12(sum71);
+        let sum73 = this.mulFQ12(sum72, a);
+        let sum74 = this.squareFQ12(sum73);
+        let sum75 = this.squareFQ12(sum74);
+        let sum76 = this.squareFQ12(sum75);
+        let sum77 = this.mulFQ12(sum76, a);
+        let sum78 = this.squareFQ12(sum77);
+        let sum79 = this.mulFQ12(sum78, a);
+        let sum80 = this.squareFQ12(sum79);
+        let sum81 = this.mulFQ12(sum80, a);
+        let sum82 = this.squareFQ12(sum81);
+        let sum83 = this.mulFQ12(sum82, a);
+        let sum84 = this.squareFQ12(sum83);
+        let sum85 = this.mulFQ12(sum84, a);
+        let sum86 = this.squareFQ12(sum85);
+        let sum87 = this.squareFQ12(sum86);
+        let sum88 = this.squareFQ12(sum87);
+        let sum89 = this.squareFQ12(sum88);
+        let sum90 = this.mulFQ12(sum89, a);
+        return sum90;
+    };
+    this.expFQ12 = function (a, power) {
+        let sum = FQ12One;
+        let t = FQ12One;
+        let mb = MathLib.reverseBytes(MathLib.num2bin(power, S), S);
+        let firstOne = false;
+        let i = 0;
+        for (i = 0; i < CURVE_BITS_P8; i += 1) {
+            if (firstOne) {
+                t = this.squareFQ12(sum);
+            }
+            if (MathLib.bitwiseAnd(mb, (MathLib.leftShift(mask, ((CURVE_BITS_P8 - 1) - i)))).toString() !== zero) {
+                firstOne = true;
+                sum = this.mulFQ12(t, a);
+            } else {
+                sum = t;
+            }
+        }
+        return sum;
+    };
+// ----------------------------------------------------
+    this.doubleCurvePoint = function (a) { // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
+        let res = {
+            x: 0,
+            y: 0,
+            z: 0,
+            t: 0
+        };
+        let A = this.modReduce(Utils.int256Mul(a.x, a.x), P);
+        let B = this.modReduce(Utils.int256Mul(a.y, a.y), P);
+        let C = this.modReduce(Utils.int256Mul(B, B), P);
+        let t = Utils.int256Add(a.x, B);
+        let t2 = this.modReduce(Utils.int256Mul(t, t), P);
+        t = Utils.int256Sub(t2, A);
+        t2 = Utils.int256Sub(t, C);
+        let d = Utils.int256Mul(t2, 2);
+        t = Utils.int256Mul(A, 2);
+        let e = Utils.int256Add(t, A);
+        let f = this.modReduce(Utils.int256Mul(e, e), P);
+        t = Utils.int256Mul(d, 2);
+        res.x = Utils.int256Sub(f, t);
+        t = Utils.int256Mul(C, 2);
+        t2 = Utils.int256Mul(t, 2);
+        t = Utils.int256Mul(t2, 2);
+        res.y = Utils.int256Sub(d, res.x);
+        t2 = this.modReduce(Utils.int256Mul(e, res.y), P);
+        res.y = Utils.int256Sub(t2, t);
+// int prod = res.y * a.z;
+// if (a.t != 0) {
+//    prod = a.y * a.z;
+// }
+// res.z = modReduce(prod, P) * 2;
+        let prod = Utils.int256Mul(a.y, a.z);
+        res.z = Utils.int256Mul(this.modReduce(prod, P), 2);
+        return res;
+    };
+    this.addCurvePoints = function (a, b) { // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
+        let res = {
+            x: 0,
+            y: 0,
+            z: 0,
+            t: 0
+        };
+        if (Utils.int256Compare(a.z, 0) === 0) {
+            res = b;
+        } else if (Utils.int256Compare(b.z, 0) === 0) {
+            res = a;
+        } else {
+// Normalize the points by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
+// by [u1:s1:z1·z2] and [u2:s2:z1·z2]
+// where u1 = x1·z2², s1 = y1·z2³ and u1 = x2·z1², s2 = y2·z1³
+            let z12 = this.modReduce(Utils.int256Mul(a.z, a.z), P);
+            let z22 = this.modReduce(Utils.int256Mul(b.z, b.z), P);
+            let u1 = this.modReduce(Utils.int256Mul(a.x, z22), P);
+            let u2 = this.modReduce(Utils.int256Mul(b.x, z12), P);
+            let t = this.modReduce(Utils.int256Mul(b.z, z22), P);
+            let s1 = this.modReduce(Utils.int256Mul(a.y, t), P);
+            t = this.modReduce(Utils.int256Mul(a.z, z12), P);
+            let s2 = this.modReduce(Utils.int256Mul(b.y, t), P);
+// Compute x = (2h)²(s²-u1-u2)
+// where s = (s2-s1)/(u2-u1) is the slope of the line through
+// (u1,s1) and (u2,s2). The extra factor 2h = 2(u2-u1) comes from the value of z below.
+// This is also:
+// 4(s2-s1)² - 4h²(u1+u2) = 4(s2-s1)² - 4h³ - 4h²(2u1)
+//                        = r² - j - 2v
+// with the notations below.
+            let h = Utils.int256Sub(u2, u1);
+            let xEqual = Utils.int256Compare(h, 0) === 0;
+            t = Utils.int256Mul(h, 2);
+// i = 4h²
+            let i = this.modReduce(Utils.int256Mul(t, t), P);
+// j = 4h³
+            let j = this.modReduce(Utils.int256Mul(h, i), P);
+            t = Utils.int256Sub(s2, s1);
+            let yEqual = Utils.int256Compare(t, 0) === 0;
+            if (xEqual && yEqual) {
+                res = this.doubleCurvePoint(a);
+            } else {
+                let r = Utils.int256Add(t, t);
+                let v = this.modReduce(Utils.int256Mul(u1, i), P);
+// t4 = 4(s2-s1)²
+                let t4 = this.modReduce(Utils.int256Mul(r, r), P);
+                let t6 = Utils.int256Sub(t4, j);
+                t = Utils.int256Mul(v, 2);
+                res.x = Utils.int256Sub(t6, t);
+// Set y = -(2h)³(s1 + s*(x/4h²-u1))
+// This is also
+// y = - 2·s1·j - (s2-s1)(2x - 2i·u1) = r(v-x) - 2·s1·j
+                t = Utils.int256Sub(v, res.x);
+                t4 = this.modReduce(Utils.int256Mul(s1, j), P);
+                t6 = Utils.int256Mul(t4, 2);
+                t4 = this.modReduce(Utils.int256Mul(r, t), P);
+                res.y = Utils.int256Sub(t4, t6);
+// Set z = 2(u2-u1)·z1·z2 = 2h·z1·z2
+                t = Utils.int256Add(a.z, b.z);
+                t4 = this.modReduce(Utils.int256Mul(t, t), P);
+                t = Utils.int256Sub(t4, z12);
+                t4 = Utils.int256Sub(t, z22);
+                res.z = this.modReduce(Utils.int256Mul(t4, h), P);
+            }
+        }
+        return res;
+    };
+    this.mulCurvePoint = function (a, m) {
+        let res = {
+            x: 0,
+            y: 1,
+            z: 0,
+            t: 0
+        };
+        if (m !== 0) {
+// Double and add method.
+// Lowest bit to highest.
+            let t = {
+                x: 0,
+                y: 0,
+                z: 0,
+                t: 0
+            };
+            let sum = {
+                x: 0,
+                y: 0,
+                z: 0,
+                t: 0
+            };
+            let mb = MathLib.reverseBytes(MathLib.num2bin(m, S), S);
+            let firstOne = false;
+            let i;
+            for (i = 0; i < CURVE_BITS_P8; i += 1) {
+                if (firstOne) {
+                    t = this.doubleCurvePoint(sum);
+                }
+                if (MathLib.bitwiseAnd(mb, MathLib.leftShift(mask, ((CURVE_BITS_P8 - 1) - i))).toString() !== zero) {
+                    firstOne = true;
+                    sum = this.addCurvePoints(t, a);
+                } else {
+                    sum = t;
+                }
+            }
+            res = sum;
+        }
+        return res;
+    };
+    this.makeAffineCurvePoint = function (a) {
+// MakeAffine converts a to affine form. If c is ∞, then it sets
+// a to 0 : 1 : 0.
+        let res = a;
+        if (a.z !== 1) {
+            if (a.z === 0) {
+                res = {
+                    x: 0,
+                    y: 1,
+                    z: 0,
+                    t: 0
+                };
+            } else {
+                let zInv = this.modInverseBranchlessP(a.z);
+                let t = this.modReduce(a.y * zInv, P);
+                let zInv2 = this.modReduce(zInv * zInv, P);
+                let ay = this.modReduce(t * zInv2, P);
+                let ax = this.modReduce(a.x * zInv2, P);
+                res = {
+                    x: ax,
+                    y: ay,
+                    z: 1,
+                    t: 1
+                };
+            }
+        }
+        return res;
+    };
+    this.negCurvePoint = function (a) {
+        return {
+            x: a.x,
+            y: - a.y,
+            z: a.z,
+            t: 0
+        };
+    };
+    this.isInfCurvePoint = function (a) {
+        return a.z === 0;
+    };
+    this.createCurvePoint = function (ccp) {
+        return((Utils.int256Compare(ccp.x, 0) === 0 && Utils.int256Compare(ccp.y, 1) === 0) || (Utils.int256Compare(ccp.x, 0) === 0 && Utils.int256Compare(ccp.y, 0) === 0))
+            ? {
+                x: 0,
+                y: 1,
+                z: 0,
+                t: 0
+            }
+            : {
+                x: ccp.x,
+                y: ccp.y,
+                z: 1,
+                t: 1
+            };
+    };
+    this.getG1Point = function (cp) {
+        let acp = this.makeAffineCurvePoint(cp);
+        return {x: acp.x, y: acp.y};
+    };
+    this.mulG1Point = function (a, m) {
+        let res = this.mulCurvePoint(this.createCurvePoint(a), m);
+        return this.getG1Point(res);
+    };
+    this.addG1Points = function (a, b) {
+        let res = this.addCurvePoints(this.createCurvePoint(a), this.createCurvePoint(b));
+        return this.getG1Point(res);
+    };
+    this.doubleG1Point = function (a) {
+        let res = this.doubleCurvePoint(this.createCurvePoint(a));
+        return this.getG1Point(res);
+    };
+// ----------------------------------------------------
+    this.doubleTwistPoint = function (a) { // See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/doubling/dbl-2009-l.op3
+        let res = {
+            x: FQ2Zero,
+            y: FQ2Zero,
+            z: FQ2Zero,
+            t: FQ2Zero
+        };
+        let A = this.squareFQ2(a.x);
+        let B = this.squareFQ2(a.y);
+        let C = this.squareFQ2(B);
+        let t = this.addFQ2(a.x, B);
+        let t2 = this.squareFQ2(t);
+        t = this.subFQ2(t2, A);
+        t2 = this.subFQ2(t, C);
+        let d = this.mulScalarFQ2(t2, 2);
+        t = this.mulScalarFQ2(A, 2);
+        let e = this.addFQ2(t, A);
+        let f = this.squareFQ2(e);
+        t = this.mulScalarFQ2(d, 2);
+        res.x = this.subFQ2(f, t);
+        t = this.mulScalarFQ2(C, 2);
+        t2 = this.mulScalarFQ2(t, 2);
+        t = this.mulScalarFQ2(t2, 2);
+        res.y = this.subFQ2(d, res.x);
+        t2 = this.mulFQ2(e, res.y);
+        res.y = this.subFQ2(t2, t);
+        res.z = this.mulScalarFQ2(this.mulFQ2(a.y, a.z), 2);
+        return res;
+    };
+    this.addTwistPoints = function (a, b) {
+        let res = {
+            x: FQ2Zero,
+            y: FQ2Zero,
+            z: FQ2Zero,
+            t: a.t
+        };
+        if (a.z === FQ2Zero) {
+            res = b;
+        } else if (b.z === FQ2Zero) {
+            res = a;
+        } else {
+// See http://hyperelliptic.org/EFD/g1p/auto-code/shortw/jacobian-0/addition/add-2007-bl.op3
+// Normalize the points by replacing a = [x1:y1:z1] and b = [x2:y2:z2]
+// by [u1:s1:z1·z2] and [u2:s2:z1·z2]
+// where u1 = x1·z2², s1 = y1·z2³ and u1 = x2·z1², s2 = y2·z1³
+            let z12 = this.squareFQ2(a.z);
+            let z22 = this.squareFQ2(b.z);
+            let u1 = this.mulFQ2(a.x, z22);
+            let u2 = this.mulFQ2(b.x, z12);
+            let t = this.mulFQ2(b.z, z22);
+            let s1 = this.mulFQ2(a.y, t);
+            t = this.mulFQ2(a.z, z12);
+            let s2 = this.mulFQ2(b.y, t);
+// Compute x = (2h)²(s²-u1-u2)
+// where s = (s2-s1)/(u2-u1) is the slope of the line through
+// (u1,s1) and (u2,s2). The extra factor 2h = 2(u2-u1) comes from the value of z below.
+// This is also:
+// 4(s2-s1)² - 4h²(u1+u2) = 4(s2-s1)² - 4h³ - 4h²(2u1)
+//                        = r² - j - 2v
+// with the notations below.
+            let h = this.subFQ2(u2, u1);
+            let xEqual = h === FQ2Zero;
+            t = this.mulScalarFQ2(h, 2);
+// i = 4h²
+            let i = this.squareFQ2(t);
+// j = 4h³
+            let j = this.mulFQ2(h, i);
+            t = this.subFQ2(s2, s1);
+            let yEqual = t === FQ2Zero;
+            if (xEqual && yEqual) {
+                res = this.doubleTwistPoint(a);
+            } else {
+                let r = this.mulScalarFQ2(t, 2);
+                let v = this.mulFQ2(u1, i);
+// t4 = 4(s2-s1)²
+                let t4 = this.squareFQ2(r);
+                let t6 = this.subFQ2(t4, j);
+                t = this.mulScalarFQ2(v, 2);
+                res.x = this.subFQ2(t6, t);
+// Set y = -(2h)³(s1 + s*(x/4h²-u1))
+// This is also
+// y = - 2·s1·j - (s2-s1)(2x - 2i·u1) = r(v-x) - 2·s1·j
+                t = this.subFQ2(v, res.x);
+                t4 = this.mulFQ2(s1, j);
+                t6 = this.mulScalarFQ2(t4, 2);
+                t4 = this.mulFQ2(r, t);
+                res.y = this.subFQ2(t4, t6);
+// Set z = 2(u2-u1)·z1·z2 = 2h·z1·z2
+                t = this.addFQ2(a.z, b.z);
+                t4 = this.squareFQ2(t);
+                t = this.subFQ2(t4, z12);
+                t4 = this.subFQ2(t, z22);
+                res.z = this.mulFQ2(t4, h);
+            }
+        }
+        return res;
+    };
+    this.makeAffineTwistPoint = function (a) {
+        let res = a;
+        if (Utils.int256Compare(a.z.x, 0) !== 0 && Utils.int256Compare(a.z.y, 1) !== 0) {
+            if (a.z === FQ2Zero) {
+                res = {
+                    x: FQ2Zero,
+                    y: FQ2One,
+                    z: FQ2Zero,
+                    t: FQ2Zero
+                };
+            } else {
+                let zInv = this.inverseFQ2(a.z);
+                let t = this.mulFQ2(a.y, zInv);
+                let zInv2 = this.squareFQ2(zInv);
+                res.y = this.mulFQ2(t, zInv2);
+                t = this.mulFQ2(a.x, zInv2);
+                res.x = t;
+                res.z = {
+                    x: 0,
+                    y: 1
+                };
+                res.t = {
+                    x: 0,
+                    y: 1
+                };
+            }
+        }
+        return res;
+    };
+    this.negTwistPoint = function (a) {
+        return {
+            x: a.x,
+            y: this.subFQ2(FQ2Zero, a.y),
+            z: a.z,
+            t: FQ2Zero
+        };
+    };
+    this.isInfTwistPoint = function (a) {
+        return a.z === FQ2Zero;
+    };
+    this.createTwistPoint = function (ctp) { // Output x and y coords from ZoKrates need to be swaped to work correctly.
+        let x = {
+            x: ctp.x.y,
+            y: ctp.x.x
+        };
+        let y = {
+            x: ctp.y.y,
+            y: ctp.y.x
+        };
+        return(ctp.x === FQ2Zero && ctp.y === FQ2One)
+            ? {
+                x: FQ2Zero,
+                y: FQ2One,
+                z: FQ2Zero,
+                t: FQ2Zero
+            }
+            : {
+                x: x,
+                y: y,
+                z: FQ2One,
+                t: FQ2One
+            };
+    };
+    this.getG2Point = function (tp) {
+        let atp = this.makeAffineTwistPoint(tp);
+        return {x: atp.x, y: atp.y};
+    };
+    this.addG2Points = function (a, b) {
+        let res = this.addTwistPoints(this.createTwistPoint(a), this.createTwistPoint(b));
+        return this.getG2Point(res);
+    };
+    this.doubleG2Point = function (a) {
+        let res = this.doubleTwistPoint(this.createTwistPoint(a));
+        return this.getG2Point(res);
+    };
+};
+const BN256PairingLib = function () {
+    const BN256 = new BN256Lib();
+    const FQ2Zero = {
+        x: 0,
+        y: 0
+    };
+    const FQ2One = {
+        x: 0,
+        y: 1
+    };
+    const FQ6Zero = {
+        x: FQ2Zero,
+        y: FQ2Zero,
+        z: FQ2Zero
+    };
+    const FQ6One = {
+        x: FQ2Zero,
+        y: FQ2Zero,
+        z: FQ2One
+    };
+    const FQ12Zero = {
+        x: FQ6Zero,
+        y: FQ6Zero
+    };
+    const FQ12One = {
+        x: FQ6Zero,
+        y: FQ6One
+    };
+    this.lineFuncAdd = function (r, p, q, r2) {
+// See the mixed addition algorithm from 'Faster Computation of the
+// Tate Pairing', http://arxiv.org/pdf/0904.0854v3.pdf
+        let B = BN256.mulFQ2(p.x, r.t);
+        let D = BN256.addFQ2(p.y, r.z);
+        D = BN256.squareFQ2(D);
+        D = BN256.subFQ2(D, r2);
+        D = BN256.subFQ2(D, r.t);
+        D = BN256.mulFQ2(D, r.t);
+        let H = BN256.subFQ2(B, r.x);
+        let I = BN256.squareFQ2(H);
+        let E = BN256.addFQ2(I, I);
+        E = BN256.addFQ2(E, E);
+        let J = BN256.mulFQ2(H, E);
+        let L1 = BN256.subFQ2(D, r.y);
+        L1 = BN256.subFQ2(L1, r.y);
+        let V = BN256.mulFQ2(r.x, E);
+        let rOutX = BN256.squareFQ2(L1);
+        rOutX = BN256.subFQ2(rOutX, J);
+        rOutX = BN256.subFQ2(rOutX, V);
+        rOutX = BN256.subFQ2(rOutX, V);
+        let rOutZ = BN256.addFQ2(r.z, H);
+        rOutZ = BN256.squareFQ2(rOutZ);
+        rOutZ = BN256.subFQ2(rOutZ, r.t);
+        rOutZ = BN256.subFQ2(rOutZ, I);
+        let t = BN256.subFQ2(V, rOutX);
+        t = BN256.mulFQ2(t, L1);
+        let t2 = BN256.mulFQ2(r.y, J);
+        t2 = BN256.addFQ2(t2, t2);
+        let rOutY = BN256.subFQ2(t, t2);
+        let rOutT = BN256.squareFQ2(rOutZ);
+        t = BN256.addFQ2(p.y, rOutZ);
+        t = BN256.squareFQ2(t);
+        t = BN256.subFQ2(t, r2);
+        t = BN256.subFQ2(t, rOutT);
+        t2 = BN256.mulFQ2(L1, p.x);
+        t2 = BN256.addFQ2(t2, t2);
+        let a = BN256.subFQ2(t2, t);
+        let c = BN256.mulScalarFQ2(rOutZ, q.y);
+        c = BN256.addFQ2(c, c);
+        let b = BN256.subFQ2(BN256.FQ2Zero, L1);
+        b = BN256.mulScalarFQ2(b, q.x);
+        b = BN256.addFQ2(b, b);
+        let rOut = {
+            x: rOutX,
+            y: rOutY,
+            z: rOutZ,
+            t: rOutT
+        };
+        return {a: a, b: b, c: c, rOut: rOut};
+    };
+    this.lineFuncDouble = function (r, q) {
+// See the doubling algorithm for a=0 from 'Faster Computation of the
+// Tate Pairing', http://arxiv.org/pdf/0904.0854v3.pdf
+        let A = BN256.squareFQ2(r.x);
+        let B = BN256.squareFQ2(r.y);
+        let C = BN256.squareFQ2(B);
+        let D = BN256.addFQ2(r.x, B);
+        D = BN256.squareFQ2(D);
+        D = BN256.subFQ2(D, A);
+        D = BN256.subFQ2(D, C);
+        D = BN256.addFQ2(D, D);
+        let E = BN256.addFQ2(A, A);
+        E = BN256.addFQ2(E, A);
+        let G = BN256.squareFQ2(E);
+        let rOutX = BN256.subFQ2(G, D);
+        rOutX = BN256.subFQ2(rOutX, D);
+        let rOutZ = BN256.addFQ2(r.y, r.z);
+        rOutZ = BN256.squareFQ2(rOutZ);
+        rOutZ = BN256.subFQ2(rOutZ, B);
+        rOutZ = BN256.subFQ2(rOutZ, r.t);
+        let rOutY = BN256.subFQ2(D, rOutX);
+        rOutY = BN256.mulFQ2(rOutY, E);
+        let t = BN256.addFQ2(C, C);
+        t = BN256.addFQ2(t, t);
+        t = BN256.addFQ2(t, t);
+        rOutY = BN256.subFQ2(rOutY, t);
+        let rOutT = BN256.squareFQ2(rOutZ);
+        t = BN256.mulFQ2(E, r.t);
+        t = BN256.addFQ2(t, t);
+        let b = BN256.subFQ2(BN256.FQ2Zero, t);
+        b = BN256.mulScalarFQ2(b, q.x);
+        let a = BN256.addFQ2(r.x, E);
+        a = BN256.squareFQ2(a);
+        a = BN256.subFQ2(a, A);
+        a = BN256.subFQ2(a, G);
+        t = BN256.addFQ2(B, B);
+        t = BN256.addFQ2(t, t);
+        a = BN256.subFQ2(a, t);
+        let c = BN256.mulFQ2(rOutZ, r.t);
+        c = BN256.addFQ2(c, c);
+        c = BN256.mulScalarFQ2(c, q.y);
+        let rOut = {
+            x: rOutX,
+            y: rOutY,
+            z: rOutZ,
+            t: rOutT
+        };
+        return {a: a, b: b, c: c, rOut: rOut};
+    };
+    this.mulLine = function (ret, a, b, c) {
+        let a2 = {
+            FQ2Zero,
+            a,
+            b
+        };
+        a2 = BN256.mulFQ6(a2, ret.x);
+        let t3 = BN256.mulScalarFQ6(ret.y, c);
+        let t = BN256.addFQ2(b, c);
+        let t2 = {
+            FQ2Zero,
+            a,
+            t
+        };
+        let resX = BN256.addFQ6(ret.x, ret.y);
+        let resY = t3;
+        resX = BN256.mulFQ6(resX, t2);
+        resX = BN256.subFQ6(resX, a2);
+        resX = BN256.subFQ6(resX, resY);
+        a2 = BN256.mulTauFQ6(a2);
+        resY = BN256.addFQ6(resY, a2);
+        return {x: resX, y: resY};
+    };
+    this.miller = function (q, p) {
+        let ret = FQ12One;
+        let aAffine = BN256.makeAffineTwistPoint(q);
+        let bAffine = BN256.makeAffineCurvePoint(p);
+        let minusA = BN256.negTwistPoint(aAffine);
+        let r = aAffine;
+        let r2 = BN256.squareFQ2(aAffine.y);
+// sixuPlus2NAF is 6u+2 in non-adjacent form.
+// Unrolled loop to get rid of in-loop branching. Reference impl.:
+// https://github.com/ethereum/go-ethereum/blob/bd6879ac518431174a490ba42f7e6e822dcb3ee1/crypto/bn256/google/optate.go#L213
+// var sixuPlus2NAF = {}int8{0, 0, 0, 1, 0, 1, 0, -1, 0, 0, 1, -1, 0, 0, 1, 0,
+//                           0, 1, 1, 0, -1, 0, 0, 1, 0, -1, 0, 0, 0, 0, 1, 1,
+//                           1, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 1,
+//                           1, 0, 0, -1, 0, 0, 0, 1, 1, 0, -1, 0, 0, 1, 0, 1, 1}
+// ---- 1
+        let lfr = this.lineFuncDouble(r, bAffine);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- -1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, minusA, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 1
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        lfr = this.lineFuncAdd(r, aAffine, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// ---- 0
+        lfr = this.lineFuncDouble(r, bAffine);
+        ret = BN256.squareFQ12(ret);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+// In order to calculate Q1 we have to convert q from the sextic twist
+// to the full GF(p^12) group, apply the Frobenius there, and convert
+// back.
+//
+// The twist isomorphism is (x', y') -> (xω², yω³). If we consider just
+// x for a moment, then after applying the Frobenius, we have x̄ω^(2p)
+// where x̄ is the conjugate of x. If we are going to apply the inverse
+// isomorphism we need a value with a single coefficient of ω² so we
+// rewrite this as x̄ω^(2p-2)ω². ξ⁶ = ω and, due to the construction of
+// p, 2p-2 is a multiple of six. Therefore we can rewrite as
+// x̄ξ^((p-1)/3)ω² and applying the inverse isomorphism eliminates the
+// ω².
+//
+// A similar argument can be made for the y value.
+        let q1x = BN256.conjugateFQ2(aAffine.x);
+        q1x = BN256.mulFQ2(q1x, BN256.xiToPMinus1Over3);
+        let q1y = BN256.conjugateFQ2(aAffine.y);
+        q1y = BN256.mulFQ2(q1y, BN256.xiToPMinus1Over2);
+        let q1 = {
+            x: q1x,
+            y: q1y,
+            z: {
+                x: 0,
+                y: 1
+            },
+            t: {
+                x: 0,
+                y: 1
+            }
+        };
+// For Q2 we are applying the p² Frobenius. The two conjugations cancel
+// out and we are left only with the factors from the isomorphism. In
+// the case of x, we end up with a pure number which is why
+// xiToPSquaredMinus1Over3 is ∈ GF(p). With y we get a factor of -1. We
+// ignore this to end up with -Q2.
+        let minusQ2x = BN256.mulScalarFQ2(aAffine.x, BN256.xiToPSquaredMinus1Over3);
+        let minusQ2 = {
+            x: minusQ2x,
+            y: aAffine.y,
+            z: {
+                x: 0,
+                y: 1
+            },
+            t: {
+                x: 0,
+                y: 1
+            }
+        };
+        r2 = BN256.squareFQ2(q1.y);
+        lfr = this.lineFuncAdd(r, q1, bAffine, r2);
+        ret = this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+        r = lfr.rOut;
+        r2 = BN256.squareFQ2(minusQ2.y);
+        lfr = this.lineFuncAdd(r, minusQ2, bAffine, r2);
+        return this.mulLine(ret, lfr.a, lfr.b, lfr.c);
+    };
+    this.finalExponentiation = function (d) {
+        let t1 = {
+            x: BN256.negFQ6(d.x),
+            y: d.y
+        };
+        let inv = BN256.inverseFQ12(d);
+        t1 = BN256.mulFQ12(t1, inv);
+        let t2 = BN256.frobeniusP2FQ12(t1);
+        t1 = BN256.mulFQ12(t1, t2);
+        let fp = BN256.frobeniusFQ12(t1);
+        let fp2 = BN256.frobeniusP2FQ12(t1);
+        let fp3 = BN256.frobeniusFQ12(fp2);
+        let fu = BN256.expFQ12_u(t1);
+        let fu2 = BN256.expFQ12_u(fu);
+        let fu3 = BN256.expFQ12_u(fu2);
+        let y3 = BN256.frobeniusFQ12(fu);
+        let fu2p = BN256.frobeniusFQ12(fu2);
+        let fu3p = BN256.frobeniusFQ12(fu3);
+        let y2 = BN256.frobeniusP2FQ12(fu2);
+        let y0 = BN256.mulFQ12(fp, fp2);
+        y0 = BN256.mulFQ12(y0, fp3);
+        let y1 = BN256.conjugateFQ12(t1);
+        let y5 = BN256.conjugateFQ12(fu2);
+        y3 = BN256.conjugateFQ12(y3);
+        let y4 = BN256.mulFQ12(fu, fu2p);
+        y4 = BN256.conjugateFQ12(y4);
+        let y6 = BN256.mulFQ12(fu3, fu3p);
+        y6 = BN256.conjugateFQ12(y6);
+        let t0 = BN256.squareFQ12(y6);
+        t0 = BN256.mulFQ12(t0, y4);
+        t0 = BN256.mulFQ12(t0, y5);
+        t1 = BN256.mulFQ12(y3, y5);
+        t1 = BN256.mulFQ12(t1, t0);
+        t0 = BN256.mulFQ12(t0, y2);
+        t1 = BN256.squareFQ12(t1);
+        t1 = BN256.mulFQ12(t1, t0);
+        t1 = BN256.squareFQ12(t1);
+        t0 = BN256.mulFQ12(t1, y1);
+        t1 = BN256.mulFQ12(t1, y0);
+        t0 = BN256.squareFQ12(t0);
+        t0 = BN256.mulFQ12(t0, t1);
+        return t0;
+    };
+    this.pairInternal = function (g1, g2) {
+        let e = this.miller(g2, g1);
+        let ret = this.finalExponentiation(e);
+        if (BN256.isInfTwistPoint(g2) || BN256.isInfCurvePoint(g1)) {
+            ret = FQ12One;
+        }
+        return ret;
+    };
+    this.pair = function (g1, g2) {
+        return this.pairInternal(BN256.createCurvePoint(g1), BN256.createTwistPoint(g2));
+    };
+    this.pairCheckP2PrecalcInternal = function (a0, b0, a1, b1) {
+        let acc = FQ12One;
+        a0 = BN256.makeAffineCurvePoint(a0);
+        a1 = BN256.makeAffineCurvePoint(a1);
+        if (! BN256.isInfCurvePoint(a0) && ! BN256.isInfTwistPoint(b0)) {
+            acc = BN256.mulFQ12(acc, this.miller(b0, a0));
+        }
+        if (! BN256.isInfCurvePoint(a1) && ! BN256.isInfTwistPoint(b1)) {
+            acc = BN256.mulFQ12(acc, this.miller(b1, a1));
+        }
+        acc = this.finalExponentiation(acc);
+        return acc === FQ12One;
+    };
+    this.pairCheckP2Precalc = function (a0, b0, a1, b1) {
+        return this.pairCheckP2PrecalcInternal(BN256.createCurvePoint(a0), BN256.createTwistPoint(b0), BN256.createCurvePoint(a1), BN256.createTwistPoint(b1));
+    };
+};
+const PlonkVerifierLib = function () {
+    const MathLib = new Math();
+    const BN256 = new BN256Lib();
+    const BN256Pairing = new BN256PairingLib();
+    const n = <%= 2 ** power % >;
+    const nPower = <%= power % >;
+    const nPublic = <%= nPublic % >;
+    const nLagrange = <%= Math.max(nPublic, 1) + 1 % >;
+
+    const Qmx = <%= Qm[0] % >;
+    const Qmy = <%= Qm[0] == '0' ? '0' : Qm[1] % >;
+    const Qlx = <%= Ql[0] % >;
+    const Qly = <%= Ql[0] == '0' ? '0' : Ql[1] % >;
+    const Qrx = <%= Qr[0] % >;
+    const Qry = <%= Qr[0] == '0' ? '0' : Qr[1] % >;
+    const Qox = <%= Qo[0] % >;
+    const Qoy = <%= Qo[0] == '0' ? '0' : Qo[1] % >;
+    const Qcx = <%= Qc[0] % >;
+    const Qcy = <%= Qc[0] == '0' ? '0' : Qc[1] % >;
+    const S1x = <%= S1[0] % >;
+    const S1y = <%= S1[0] == '0' ? '0' : S1[1] % >;
+    const S2x = <%= S2[0] % >;
+    const S2y = <%= S2[0] == '0' ? '0' : S2[1] % >;
+    const S3x = <%= S3[0] % >;
+    const S3y = <%= S3[0] == '0' ? '0' : S3[1] % >;
+    const k1 = 2;
+    const k2 = 3;
+    const X2x1 = <%= X_2[0][0] % >;
+    const X2x2 = <%= X_2[0][1] % >;
+    const X2y1 = <%= X_2[1][0] % >;
+    const X2y2 = <%= X_2[1][1] % >;
+
+    const q = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    const qf = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
+    const w1 = <%= w % >;
+
+    const G1x = 1;
+    const G1y = 2;
+    const G2x1 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
+    const G2x2 = 11559732032986387107991004021392285783925812861821192530917403151452391805634;
+    const G2y1 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
+    const G2y2 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
+
+    this.inverse = function (x) {
+
+    };
+
+    this.checkField = function (field) {
+        return Utils.int256Compare(field, q) < 0;
+    };
+
+    this.checkInput = function (proof) {
+        return this.checkField(proof.eval_a)
+            && this.checkField(proof.eval_b)
+            && this.checkField(proof.eval_c)
+            && this.checkField(proof.eval_s1)
+            && this.checkField(proof.eval_s2)
+            && this.checkField(proof.eval_zw)
+            && this.checkField(proof.eval_r);
+    };
+
+    this.mulmod = function (x, y, k) {
+        return Utils.int256Mod(Utils.int256Mul(x, y), k);
+    };
+
+    this.addmod = function (x, y, k) {
+        return Utils.int256Mod(Utils.int256Add(x, y), k);
+    };
+
+    this.fromBEUnsigned = function (x, len) {
+        return MathLib.fromLEUnsigned(MathLib.reverseBytes(x, len));
+    };
+
+    this.toBEUnsigned = function (x, len) {
+        return MathLib.reverseBytes(MathLib.toLEUnsigned(x, len), len);
+    };
+
+    this.modReduce = function (k, modulus) {
+        let res = Utils.int256Mod(k, modulus);
+        return Utils.int256Compare(res, 0) < 0 ? Utils.int256Add(res, modulus) : res;
+    };
+
+    this.g1_mulAcc = function (p1, p2, s) {
+        let point = BN256.mulG1Point(p2, s);
+        return BN256.addG1Points(point, p1);
+    };
+
+    this.g1_mulSetC = function (x, y, s) {
+        return BN256.mulG1Point({x: x, y: y}, s);
+    };
+
+    this.g1_addSetC = function (g1, x, y) {
+        return BN256.addG1Points(g1, {x: x, y: y});
+    };
+
+    this.calculateChallanges = function (proof, pubSignals) {
+
+        let transcript = '';
+
+        let i;
+        for (i = 0; i < nPublic; i += 1) {
+            transcript += this.toBEUnsigned(pubSignals[i], 32);
+        }
+
+        transcript += this.toBEUnsigned(proof.a.x, 32);
+        transcript += this.toBEUnsigned(proof.a.y, 32);
+        transcript += this.toBEUnsigned(proof.b.x, 32);
+        transcript += this.toBEUnsigned(proof.b.y, 32);
+        transcript += this.toBEUnsigned(proof.c.x, 32);
+        transcript += this.toBEUnsigned(proof.c.y, 32);
+        let hash = Utils.sha256(transcript, 1);
+
+        let b = this.fromBEUnsigned(hash, 32) % q;
+
+        let beta = b;
+
+        transcript = this.toBEUnsigned(b, 32);
+
+        hash = Utils.sha256(transcript, 1);
+        let gamma = this.fromBEUnsigned(hash, 32) % q;
+
+        transcript = this.toBEUnsigned(proof.z.x, 32) + this.toBEUnsigned(proof.z.y, 32);
+
+        hash = Utils.sha256(transcript, 1);
+
+        let alpha = this.fromBEUnsigned(hash, 32) % q;
+
+        transcript = '';
+        transcript += this.toBEUnsigned(proof.t1.x, 32);
+        transcript += this.toBEUnsigned(proof.t1.y, 32);
+        transcript += this.toBEUnsigned(proof.t2.x, 32);
+        transcript += this.toBEUnsigned(proof.t2.y, 32);
+        transcript += this.toBEUnsigned(proof.t3.x, 32);
+        transcript += this.toBEUnsigned(proof.t3.y, 32);
+
+        hash = Utils.sha256(transcript, 1);
+
+        let a = Utils.int256Mod(this.fromBEUnsigned(hash, 32), q);
+
+        let xi = a;
+
+        for (i = 0; i < nPower; i += 1) {
+            a = this.mulmod(a, a, q);
+        }
+
+        let xin = a;
+
+        a = Utils.int256Mod(Utils.int256Add(Utils.int256Sub(a, 1), q), q);
+
+        let zh = a;
+
+        let zhInv = this.modReduce(this.inverse(zh), q);
+
+        transcript = '';
+
+        transcript += this.toBEUnsigned(proof.eval_a, 32);
+        transcript += this.toBEUnsigned(proof.eval_b, 32);
+        transcript += this.toBEUnsigned(proof.eval_c, 32);
+        transcript += this.toBEUnsigned(proof.eval_s1, 32);
+        transcript += this.toBEUnsigned(proof.eval_s2, 32);
+        transcript += this.toBEUnsigned(proof.eval_zw, 32);
+        transcript += this.toBEUnsigned(proof.eval_r, 32);
+
+
+        hash = Utils.sha256(transcript, 1);
+
+        let v1 = this.fromBEUnsigned(hash, 32) % q;
+
+        let v2 = this.mulmod(v1, v1, q);
+
+        let v3 = this.mulmod(v2, v1, q);
+
+        let v4 = this.mulmod(v3, v1, q);
+
+        let v5 = this.mulmod(v4, v1, q);
+
+        let v6 = this.mulmod(v5, v1, q);
+
+        transcript = this.toBEUnsigned(proof.wxi.x, 32) + this.toBEUnsigned(proof.wxi.y, 32);
+        transcript += this.toBEUnsigned(proof.wxiw.x, 32) + this.toBEUnsigned(proof.wxiw.y, 32);
+
+        hash = Utils.sha256(transcript, 1);
+
+        let u = this.fromBEUnsigned(hash, 32) % q;
+
+        return {
+            beta: beta,
+            gamma: gamma,
+            alpha: alpha,
+            xi: xi,
+            xin: xin,
+            zh: zh,
+            zhInv: zhInv,
+            u: u,
+            v: [0, v1, v2, v3, v4, v5, v6
+            ]
+        };
+    };
+
+    this.calculateLagrange = function (challanges) {
+        <% for (let i = 1; i <= Math.max(nPublic, 1); i++) { %>int eval_l<%= i %> = 0;
+            <% } %>
+        let w = 1;
+
+        <% for (let i = 1; i <= Math.max(nPublic, 1); i++) { %>eval_l<%= i %> = mulmod(n, (challanges.xi - w + q) % q, q);
+            <% if (i < Math.max(nPublic, 1)) { %>w = mulmod(w, w1, q);<% } %>
+        <% } %>
+// inverse
+    <% for (let i = 1; i <= Math.max(nPublic, 1); i++) { %>eval_l<%= i %> = modReduce(inverse(eval_l<%= i %>), q);
+            <% } %>
+
+        w = 1;
+        <% for (let i = 1; i <= Math.max(nPublic, 1); i++) { %>
+        <% if (i == 1) { %>eval_l1 = mulmod(eval_l1, challanges.zh, q);
+                <% } else { %>eval_l<%= i %> = mulmod(w, mulmod(eval_l<%= i %>, challanges.zh, q), q);
+                <% } %><% if (i < Math.max(nPublic, 1)) { %>w = mulmod(w, w1, q);<% } %>
+        <% } %>
+        return [ 0,
+            <% for (let i = 1; i <= Math.max(nPublic, 1); i++) { %>eval_l<%= i %><% if (i < Math.max(nPublic, 1)) { %>,<% } %> <% } %>
+    ];
+    };
+
+    this.calculatePl = function (l, pubSignals) {
+
+        let pl = 0;
+
+        let i;
+        for (i = 0; i < nPublic; i += 1) {
+            pl = Utils.int256Mod(Utils.int256Add(Utils.int256Sub(pl, this.mulmod(l[i + 1], pubSignals[i], q)), q), q);
+        }
+
+        return pl;
+    };
+
+    this.calculateT = function (proof, challanges, pl, eval_l1) {
+
+        let t = this.addmod(proof.eval_r, pl, q);
+
+        let t1 = this.mulmod(proof.eval_s1, challanges.beta, q);
+
+        t1 = this.addmod(t1, proof.eval_a, q);
+
+        t1 = this.addmod(t1, challanges.gamma, q);
+
+        let t2 = this.mulmod(proof.eval_s2, challanges.beta, q);
+
+        t2 = this.addmod(t2, proof.eval_b, q);
+
+        t2 = this.addmod(t2, challanges.gamma, q);
+
+        t1 = this.mulmod(t1, t2, q);
+
+        t2 = this.addmod(proof.eval_c, challanges.gamma, q);
+
+        t1 = this.mulmod(t1, t2, q);
+
+        t1 = this.mulmod(t1, proof.eval_zw, q);
+
+        t1 = this.mulmod(t1, challanges.alpha, q);
+
+        t2 = this.mulmod(eval_l1, challanges.alpha, q);
+
+        t2 = this.mulmod(t2, challanges.alpha, q);
+
+        t1 = this.addmod(t1, t2, q);
+
+        t = Utils.int256Mod(Utils.int256Sub(Utils.int256Add(t, q), t1), q);
+
+        t = this.mulmod(t, challanges.zhInv, q);
+
+        return t;
+    };
+
+    this.calculateD = function (proof, challanges, l1) {
+        let v1 = challanges.v[1];
+        let s = this.mulmod(proof.eval_a, v1, q);
+        let g1 = this.g1_mulSetC(Qlx, Qly, s);
+
+        s = this.mulmod(s, proof.eval_b, q);
+        let g2 = this.g1_mulAcc(g1, {Qmx, Qmy}, s);
+
+        s = this.mulmod(proof.eval_b, v1, q);
+        let g3 = this.g1_mulAcc(g2, {Qrx, Qry}, s);
+
+        s = this.mulmod(proof.eval_c, v1, q);
+        let g4 = this.g1_mulAcc(g3, {Qox, Qoy}, s);
+
+        s = v1;
+        let g5 = g4;
+        let betaXi = this.mulmod(challanges.beta, challanges.xi, q);
+
+
+        s = this.addmod(proof.eval_a, betaXi, q);
+        s = this.addmod(s, challanges.gamma, q);
+        let s1 = this.mulmod(k1, betaXi, q);
+        s1 = this.addmod(s1, proof.eval_b, q);
+        s1 = this.addmod(s1, challanges.gamma, q);
+
+        s = this.mulmod(s, s1, q);
+        s1 = this.mulmod(k2, betaXi, q);
+        s1 = this.addmod(s1, proof.eval_c, q);
+        s1 = this.addmod(s1, challanges.gamma, q);
+        s = this.mulmod(s, s1, q);
+        s = this.mulmod(s, challanges.alpha, q);
+        s = this.mulmod(s, v1, q);
+        s1 = this.mulmod(l1, challanges.alpha, q);
+        s1 = this.mulmod(s1, challanges.alpha, q);
+        s1 = this.mulmod(s1, v1, q);
+        s = this.addmod(s, s1, q);
+        s = this.addmod(s, challanges.u, q);
+
+        let g6 = this.g1_mulAcc(g5, {x: proof.z.x, y: proof.z.y}, s);
+
+
+        s = this.mulmod(challanges.beta, proof.eval_s1, q);
+        s = this.addmod(s, proof.eval_a, q);
+        s = this.addmod(s, challanges.gamma, q);
+        s1 = this.mulmod(challanges.beta, proof.eval_s2, q);
+        s1 = this.addmod(s1, proof.eval_b, q);
+        s1 = this.addmod(s1, challanges.gamma, q);
+        s = this.mulmod(s, s1, q);
+        s = this.mulmod(s, challanges.alpha, q);
+        s = this.mulmod(s, v1, q);
+        s = this.mulmod(s, challanges.beta, q);
+        s = this.mulmod(s, proof.eval_zw, q);
+        s = Utils.int256Mod(Utils.int256Sub(q, s), q);
+        return this.g1_mulAcc(g6, {S3x, S3y}, s);
+    };
+
+    this.calculateF = function (proof, challanges, d) {
+        let v2 = challanges.v[2];
+        let v3 = challanges.v[3];
+        let v4 = challanges.v[4];
+        let v5 = challanges.v[5];
+        let v6 = challanges.v[6];
+
+
+        let g1 = BN256.addG1Points(d, proof.t1);
+
+        let s = challanges.xin;
+        let g2 = this.g1_mulAcc(g1, proof.t2, s);
+
+        s = this.mulmod(s, s, q);
+        let g3 = this.g1_mulAcc(g2, proof.t3, s);
+
+
+        let g4 = this.g1_mulAcc(g3, proof.a, v2);
+
+        let g5 = this.g1_mulAcc(g4, proof.b, v3);
+
+        let g6 = this.g1_mulAcc(g5, proof.c, v4);
+
+        let g7 = this.g1_mulAcc(g6, {S1x, S1y}, v5);
+
+        return this.g1_mulAcc(g7, {S2x, S2y}, v6);
+    };
+
+    this.calculateE = function (proof, challanges, d, t) {
+        let v1 = challanges.v[1];
+        let v2 = challanges.v[2];
+        let v3 = challanges.v[3];
+        let v4 = challanges.v[4];
+        let v5 = challanges.v[5];
+        let v6 = challanges.v[6];
+
+        let s = t;
+        s = this.addmod(s, this.mulmod(proof.eval_r, v1, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_a, v2, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_b, v3, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_c, v4, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_s1, v5, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_s2, v6, q), q);
+        s = this.addmod(s, this.mulmod(proof.eval_zw, challanges.u, q), q);
+        s = Utils.int256Mod(Utils.int256Sub(q - s), q);
+        return this.g1_mulAcc(d, {G1x, G1y}, s);
+    };
+
+    this.calculateA1 = function (proof, challanges) {
+        return this.g1_mulAcc({x: proof.wxi.x, y: proof.wxi.y}, {x: proof.wxiw.x, y: proof.wxiw.y}, challanges.u);
+    };
+
+    this.calculateB1 = function (proof, challanges, l1, t) {
+        let d = this.calculateD(proof, challanges, l1);
+        let f = this.calculateF(proof, challanges, d);
+
+        let e = this.calculateE(proof, challanges, f, t);
+
+        let s = challanges.xi;
+
+        let B1 = this.g1_mulAcc(e, proof.wxi, s);
+
+        s = this.mulmod(challanges.u, challanges.xi, q);
+        s = this.mulmod(s, w1, q);
+
+        return this.g1_mulAcc(B1, proof.wxiw, s);
+    };
+
+    this.verifyProof = function (proof, pubSignals) {
+        Utils.assert(this.checkInput(proof) === true, 'Input error');
+
+        let challanges = this.calculateChallanges(proof, pubSignals);
+
+        let eval_l = this.calculateLagrange(challanges);
+
+        let pl = this.calculatePl(eval_l, pubSignals);
+
+        let t = this.calculateT(proof, challanges, pl, eval_l[1]);
+
+        let a1 = this.calculateA1(proof, challanges);
+
+        let b1 = this.calculateB1(proof, challanges, eval_l[1], t);
+
+        let s = a1.y;
+        s = Utils.int256Mod(Utils.int256Sub(qf, s), qf);
+
+        return BN256Pairing.pairCheckP2Precalc(
+            {
+                x: a1.x,
+                y: s
+            },
+            {
+                x: {
+                    x: X2x1, y: X2x2
+                }
+                ,
+                y: {
+                    x: X2y1, y: X2y2
+                }
+            },
+            b1,
+            {
+                x: {
+                    x: G2x1, y: G2x2
+                },
+                y: {
+                    x: G2y1, y: G2y2
+                }
+            });
+    };
+};
+
+
+const PlonkVerifier = new PlonkVerifierLib();
+
+function init() {
+    return true;
+}
+
+function main(input_str) {
+    let input = JSON.parse(input_str);
+    let params = input.params;
+
+    if (input.method === 'dummy') {
+        let result = Utils.int256Mul(params.x, params.y);
+        Chain.store('TEST_KEY', result);
+    } else {
+        throw 'Unknown operating: ' + input.method + '.';
+    }
+}
+
+function query(input_str) {
+    let input = JSON.parse(input_str);
+    let params = input.params;
+
+    let result = {};
+    if (input.method === 'verifyProof') {
+        result.data = PlonkVerifier.verifyProof(params.proof, params.pubSignals);
+    } else {
+        throw 'Unknown operating: ' + input.method + '.';
+    }
+
+    return JSON.stringify(result);
+}

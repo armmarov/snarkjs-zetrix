@@ -248,6 +248,12 @@ const commands = [
         action: zkeyExportSolidityVerifier
     },
     {
+        cmd: "zkey export zetrixverifier [circuit_final.zkey] [verifier.sol]",
+        description: "Creates a verifier in Zetrix",
+        alias: ["zkesv", "generateverifier -vk|verificationkey -v|verifier"],
+        action: zkeyExportZetrixVerifier
+    },
+    {
         cmd: "zkey export soliditycalldata [public.json] [proof.json]",
         description: "Generates call parameters ready to be called.",
         alias: ["zkesc", "generatecall -pub|public -p|proof"],
@@ -651,6 +657,44 @@ async function zkeyExportSolidityVerifier(params, options) {
     return 0;
 }
 
+// zetrix genverifier [circuit_final.zkey] [verifier.sol]
+async function zkeyExportZetrixVerifier(params, options) {
+    let zkeyName;
+    let verifierName;
+
+    if (params.length < 1) {
+        zkeyName = "circuit_final.zkey";
+    } else {
+        zkeyName = params[0];
+    }
+
+    if (params.length < 2) {
+        verifierName = "verifier.sol";
+    } else {
+        verifierName = params[1];
+    }
+
+    if (options.verbose) Logger.setLogLevel("DEBUG");
+
+    const templates = {};
+
+    if (await fileExists(path.join(__dirname, "templates"))) {
+        templates.groth16 = {};
+        templates.plonk = await fs.promises.readFile(path.join(__dirname, "templates", "verifier_plonk.js.ejs"), "utf8");
+        templates.fflonk = {};
+    } else {
+        templates.groth16 = {};
+        templates.plonk = await fs.promises.readFile(path.join(__dirname, "..", "templates", "verifier_plonk.js.ejs"), "utf8");
+        templates.fflonk = {};
+    }
+
+    const verifierCode = await zkey.exportZetrixVerifier(zkeyName, templates, logger);
+
+    fs.writeFileSync(verifierName, verifierCode, "utf-8");
+
+    return 0;
+}
+
 
 // solidity gencall <public.json> <proof.json>
 async function zkeyExportSolidityCalldata(params, options) {
@@ -698,7 +742,7 @@ async function powersOfTauNew(params, options) {
     curveName = params[0];
 
     power = parseInt(params[1]);
-    if ((power<1) || (power>28) || isNaN(power)) {
+    if ((power < 1) || (power > 28) || isNaN(power)) {
         throw new Error("Power must be between 1 and 28");
     }
 
@@ -1216,7 +1260,7 @@ async function fflonkProve(params, options) {
 
     const {proof, publicSignals} = await fflonk.prove(zkeyFilename, witnessFilename, logger);
 
-    if(undefined !== proofFilename && undefined !== publicInputsFilename) {
+    if (undefined !== proofFilename && undefined !== publicInputsFilename) {
         // Write the proof and the publig signals in each file
         await bfj.write(proofFilename, stringifyBigInts(proof), {space: 1});
         await bfj.write(publicInputsFilename, stringifyBigInts(publicSignals), {space: 1});
